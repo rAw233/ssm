@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.dao.PersonDao">
+    <!--
+    id:结果集的唯一标识，可以定义多个结果集
+    type：结果集的类型
+    -->
+    <resultMap id="baseResult" type="com.mybatis.bean.Person">
+        <!--
+        id:表的主键
+        property：实体类中对应的属性值
+        column：表中列名
+        javaType：字段在java中的类型
+        jdbcType：字段在数据库中的类型
+        typeHandler：类型处理器，基本不用设置，mybatis会自动指定
+        -->
+        <id property="id" column="ID" ></id>
+        <!--主键以外的结果-->
+        <result property="age" column="AGE"></result>
+        <result property="name" column="NAME"></result>
+        <result property="gender" column="GENDER"></result>
+
+    </resultMap>
+
+    <resultMap id="empToPerson" type="com.mybatis.bean.Emp">
+        <id property="empNo" column="EMP_NO"></id>
+        <result property="empAdd" column="EMP_ADD"></result>
+        <result property="empName" column="EMP_NAME"></result>
+        <!--一对多进行联查，将list放入映射集合中-->
+        <collection property="personList" ofType="com.mybatis.bean.Person">
+            <id property="id" column="ID" ></id>
+            <result property="age" column="AGE"></result>
+            <result property="name" column="NAME"></result>
+            <result property="gender" column="GENDER"></result>
+            <result property="empNo" column="EMP_NO"></result>
+        </collection>
+    </resultMap>
+
+    <resultMap id="selectByType" type="com.mybatis.bean.Emp">
+        <id property="empNo" column="EMP_NO"></id>
+        <result property="empAdd" column="EMP_ADD"></result>
+        <result property="empName" column="EMP_NAME"></result>
+        <collection property="personList" select="com.mybatis.dao.PersonDao.selectPersonList"></collection>
+    </resultMap>
+
+
+    <select id="select" resultType="com.mybatis.bean.Person">
+        select * from person where person = #{person}
+    </select>
+
+
+    <!--这里配合分部查询，查询条件就是关联的字段-->
+    <select id="selectPersonList" resultType="com.mybatis.bean.Person">
+        select * from person where person = #{empNo}
+    </select>
+
+</mapper>

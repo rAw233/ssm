@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.dao.EmpDao">
+    <resultMap id="empToPerson" type="com.ssm.bean.Emp">
+        <id property="empNo" column="EMP_NO"></id>
+        <result property="empAdd" column="EMP_ADD"></result>
+        <result property="empName" column="EMP_NAME"></result>
+        <!--一对多进行联查，将list放入映射集合中-->
+        <collection property="personList" ofType="com.ssm.bean.Person" fetchType="lazy">
+            <id property="id" column="ID" ></id>
+            <result property="age" column="AGE"></result>
+            <result property="name" column="NAME"></result>
+            <result property="gender" column="GENDER"></result>
+            <result property="empNo" column="EMP_NO"></result>
+        </collection>
+    </resultMap>
+
+    <resultMap id="selectByStep" type="com.ssm.bean.Emp">
+        <id property="empNo" column="EMP_NO"></id>
+        <result property="empAdd" column="EMP_ADD"></result>
+        <result property="empName" column="EMP_NAME"></result>
+        <!--这里select属性定义到personDao中的查询，colum为关联的列名，这样达到先查person一张表，然后再查emp-->
+        <collection property="personList" select="com.mybatis.dao.PersonDao.selectPersonList" column="empNo" fetchType="lazy"></collection>
+    </resultMap>
+
+
+
+
+    <select id="selectByEmpNo" resultMap="selectByStep">
+        select * from Emp where empNo = #{empNo}
+    </select>
+
+
+    <select id="selectByCondition" resultMap="empToPerson">
+        select * from Emp
+        <trim prefixOverrides="AND | OR" suffix="">
+            <if test="empNo != null and empNo != ''">
+                and empNo = #{empNo}
+            </if>
+            <if test="empName != null and empName != ''">
+                and empName = #{empName}
+            </if>
+            <if test="empAdd != null and empAdd != ''">
+                or empAdd = #{empAdd}
+            </if>
+        </trim>
+
+        <choose>
+            <when test="empNo != null and empNo != ''" >
+                and empNo = #{empNo}
+            </when>
+            <when test="empName != null and empName != ''">
+                and empName = #{empName}
+            </when>
+            <otherwise>
+                and empAdd = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectList" resultType="com.ssm.bean.Emp">
+        select * from emp where empNo in
+        <foreach collection="empNos" separator="," open="(" item="empNo" index="index" close=")">
+            #{empNo}
+        </foreach>
+    </select>
+
+    <cache></cache>
+</mapper>
